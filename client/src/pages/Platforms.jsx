@@ -190,9 +190,9 @@ export default function Platforms() {
       </div>
       <p style={{ color: '#888', margin: '0 0 1.5rem', fontSize: '0.9rem' }}>Connect your accounts and configure AI permissions</p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem', alignItems: 'start' }}>
+      <div style={{ columnCount: isMobile ? 1 : window.innerWidth > 1200 ? 3 : 2, columnGap: '1rem' }}>
         {platformConfig.map(platform => (
-          <div key={platform.id} style={{ background: '#13131a', border: `2px solid ${connected[platform.id] ? platform.color : '#2a2a3a'}`, borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', transition: 'border-color 0.3s' }}>
+          <div key={platform.id} style={{ breakInside: 'avoid', marginBottom: '1rem', background: '#13131a', border: `2px solid ${connected[platform.id] ? platform.color : '#2a2a3a'}`, borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', transition: 'border-color 0.3s' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
                 <span style={{ fontSize: '2rem' }}>{platform.icon}</span>
@@ -237,7 +237,6 @@ export default function Platforms() {
                     {platform.id === 'linkedin' && permissions.autoApplyJobs && (
                       <div style={{ background: '#1e1e2e', borderRadius: '8px', padding: '0.8rem', border: '1px dashed #0077b555', marginTop: '0.3rem' }}>
                         <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: '#4a9fd4', fontWeight: 600 }}>📄 Resume for Job Scanning</p>
-                        {resumeName && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0.8rem', background: '#13131a', borderRadius: '6px', marginBottom: '0.5rem', fontSize: '0.8rem', color: '#ccc' }}><span>📎 {resumeName}</span><span style={{ color: '#00ff88' }}>✅</span></div>}
                         <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setResume(e.target.files[0]); }} />
                         {resume && <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0.8rem', background: '#13131a', borderRadius: '6px', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#ccc' }}><span>📎 {resume.name}</span><button style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer' }} onClick={() => setResume(null)}>✕</button></div>}
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
