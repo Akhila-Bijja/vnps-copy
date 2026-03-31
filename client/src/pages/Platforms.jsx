@@ -9,6 +9,8 @@ const platformConfig = [
     authUrl: `${API_URL}/api/platforms/linkedin`,
     permissions: [
       { key: 'linkedinAutoPost', label: '📤 Auto-Post', desc: 'AI posts content on your behalf' },
+      { key: 'linkedinReplyComments', label: '💬 Auto-Reply Comments', desc: 'AI replies to your post comments' },
+      { key: 'autoApplyJobs', label: '💼 Auto-Apply Jobs', desc: 'AI applies to jobs using your resume' },
     ]
   },
   {
@@ -231,16 +233,16 @@ export default function Platforms() {
                         onClick={() => setLinkedinBotModal(true)}>🤖 Bot Settings (Auto-Apply + Comment Reply)</button>
                     )}
 
-                    {/* LinkedIn resume - REMOVED - now in Bot Settings */}
-                    {false && platform.id === 'linkedin' && permissions.autoApplyJobs && (
-                      <div style={{ background: '#1e1e2e', borderRadius: '8px', padding: '0.8rem', border: '1px dashed #7c3aed', marginTop: '0.3rem' }}>
-                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: '#a855f7', fontWeight: 600 }}>📄 Resume for Job Scanning</p>
+                    {/* LinkedIn resume upload - visible when autoApplyJobs is ON */}
+                    {platform.id === 'linkedin' && permissions.autoApplyJobs && (
+                      <div style={{ background: '#1e1e2e', borderRadius: '8px', padding: '0.8rem', border: '1px dashed #0077b555', marginTop: '0.3rem' }}>
+                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: '#4a9fd4', fontWeight: 600 }}>📄 Resume for Job Scanning</p>
                         {resumeName && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0.8rem', background: '#13131a', borderRadius: '6px', marginBottom: '0.5rem', fontSize: '0.8rem', color: '#ccc' }}><span>📎 {resumeName}</span><span style={{ color: '#00ff88' }}>✅</span></div>}
                         <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setResume(e.target.files[0]); }} />
                         {resume && <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0.8rem', background: '#13131a', borderRadius: '6px', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#ccc' }}><span>📎 {resume.name}</span><button style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer' }} onClick={() => setResume(null)}>✕</button></div>}
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                           <button style={{ padding: '0.5rem 0.8rem', background: '#2a2a3a', color: '#fff', border: '1px solid #3a3a4a', borderRadius: '6px', cursor: 'pointer', fontSize: '0.78rem' }} onClick={() => fileRef.current.click()}>📂 Choose</button>
-                          {resume && <button style={{ padding: '0.5rem 0.8rem', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 700, fontSize: '0.78rem' }} onClick={handleResumeUpload} disabled={uploading}>{uploading ? '⏳' : '✅ Submit'}</button>}
+                          {resume && <button style={{ padding: '0.5rem 0.8rem', background: '#0077b5', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 700, fontSize: '0.78rem' }} onClick={handleResumeUpload} disabled={uploading}>{uploading ? '⏳' : '✅ Upload Resume'}</button>}
                         </div>
                       </div>
                     )}
