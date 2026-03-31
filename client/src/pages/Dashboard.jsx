@@ -8,21 +8,21 @@ import Content from './Content';
 
 // Mic button for voice input
 function MicBtn({ onResult, color = '#7c3aed' }) {
-  const [active, setActive] = useState(false);
-  const recRef = useRef(null);
-  const toggle = () => {
-    if (active) { try { recRef.current?.abort(); } catch { } recRef.current = null; setActive(false); return; }
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { alert('Speech not supported. Use Chrome.'); return; }
-    const r = new SR();
-    r.lang = 'en-US'; r.continuous = false; r.interimResults = false;
-    r.onresult = (e) => { onResult(e.results[0][0].transcript); };
-    r.onend = () => setActive(false);
-    r.onerror = () => setActive(false);
-    r.start(); recRef.current = r; setActive(true);
-  };
-  return <button onClick={toggle} title={active ? 'Stop' : 'Speak'} style={{ padding: '0.35rem 0.45rem', background: active ? '#ef444422' : 'transparent', color: active ? '#ef4444' : '#555', border: `1px solid ${active ? '#ef444444' : 'transparent'}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', flexShrink: 0, transition: 'all 0.2s', animation: active ? 'micpulse 1s infinite' : 'none' }}>🎙️</button>;
-} 
+    const [active, setActive] = useState(false);
+    const recRef = useRef(null);
+    const toggle = () => {
+        if (active) { try { recRef.current?.abort(); } catch { } recRef.current = null; setActive(false); return; }
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { alert('Speech not supported. Use Chrome.'); return; }
+        const r = new SR();
+        r.lang = 'en-US'; r.continuous = false; r.interimResults = false;
+        r.onresult = (e) => { onResult(e.results[0][0].transcript); };
+        r.onend = () => setActive(false);
+        r.onerror = () => setActive(false);
+        r.start(); recRef.current = r; setActive(true);
+    };
+    return <button onClick={toggle} title={active ? 'Stop' : 'Speak'} style={{ padding: '0.35rem 0.45rem', background: active ? '#ef444422' : 'transparent', color: active ? '#ef4444' : '#555', border: `1px solid ${active ? '#ef444444' : 'transparent'}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', flexShrink: 0, transition: 'all 0.2s', animation: active ? 'micpulse 1s infinite' : 'none' }}>🎙️</button>;
+}
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -560,7 +560,7 @@ export default function Dashboard() {
                         <p style={{ color: '#888' }}>Coming Soon!</p>
                     </div>
                 )}
-                {activeNav === 'content' && <Content />}   
+                {activeNav === 'content' && <Content />}
             </div>
 
             {/* Mobile Bottom Navigation Bar */}
