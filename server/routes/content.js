@@ -134,7 +134,7 @@ router.post('/video/result', async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 // POST /api/content/image
 // Body: { prompt, aspectRatio }
-// Single call — Qwen generates image and returns URL
+// Step 1 — submits to Qwen, returns pageUrl for polling
 // ─────────────────────────────────────────────────────────────
 router.post('/image', async (req, res) => {
   try {
@@ -150,9 +150,8 @@ router.post('/image', async (req, res) => {
 6. On the right side of the Create Image area, find aspect ratio buttons: 1:1, 3:4, 4:3, 16:9, 9:16. Click "${aspectRatio}".
 7. Click the text input box and type this exact prompt: ${prompt}
 8. Click the send/submit button to generate the image.
-9. Wait for the image to fully appear on screen (15-30 seconds).
-10. Once image is visible, right click on it and copy the image address/URL.
-11. Return ONLY this JSON: {"image_url": "THE_EXACT_IMAGE_URL"}
+9. Do NOT wait for image to finish generating.
+10. Return ONLY this JSON: {"page_url": "CURRENT_FULL_URL_OF_PAGE"}
 `.trim();
 
     const { data } = await axios.post(TINYFISH_URL, {
@@ -162,15 +161,55 @@ router.post('/image', async (req, res) => {
       timeout: 300,
     }, { headers: tfHeaders() });
 
+    const pageUrl = extractPageUrl(data);
+
+    res.json({
+      status: 'pending',
+      pageUrl,
+      message: 'Image submitted! Ready in ~30 seconds.',
+      waitMs: 35000,
+    });
+  } catch (err) {
+    console.error('Image step1 error:', err.response?.data || err.message);
+    res.status(500).json({ message: err.response?.data?.message || err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// POST /api/content/image/result
+// Body: { pageUrl }
+// Step 2 — retrieves image URL from Qwen page
+// ─────────────────────────────────────────────────────────────
+router.post('/image/result', async (req, res) => {
+  try {
+    const { pageUrl } = req.body;
+    if (!pageUrl) return res.status(400).json({ message: 'pageUrl is required' });
+
+    const goal = `
+1. If not logged in, login with email: ${QWEN_EMAIL} and password: ${QWEN_PASSWORD}.
+2. This page shows a recently generated image.
+3. Wait for the image generation to complete if still processing (up to 30 seconds).
+4. Once the image is visible on screen, locate the <img> element for the generated image.
+5. Extract the 'src' attribute URL from the <img> element. It should be a cdn.qwenlm.ai URL.
+6. Return ONLY this exact JSON: {"image_url": "THE_EXACT_IMAGE_URL"}
+`.trim();
+
+    const { data } = await axios.post(TINYFISH_URL, {
+      url: pageUrl,
+      goal,
+      return_type: 'text',
+      timeout: 300,
+    }, { headers: tfHeaders() });
+
     const imageUrl = extractMediaUrl(data);
 
     if (!imageUrl) {
-      return res.status(500).json({ message: 'Could not get image URL. Please try again.' });
+      return res.json({ status: 'pending', message: 'Still generating, try again in 15 seconds.' });
     }
 
     res.json({ status: 'completed', imageUrl });
   } catch (err) {
-    console.error('Image gen error:', err.response?.data || err.message);
+    console.error('Image result error:', err.response?.data || err.message);
     res.status(500).json({ message: err.response?.data?.message || err.message });
   }
 });

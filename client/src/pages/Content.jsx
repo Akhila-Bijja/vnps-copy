@@ -128,7 +128,7 @@ export default function Content() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const [videoState, setVideoState] = useState({ prompt: '', ratio: '16:9', status: 'idle', msg: '', videoUrl: '', pageUrl: '', pollCount: 0 });
-  const [imageState, setImageState] = useState({ prompt: '', ratio: '1:1', loading: false, imageUrl: '', error: '' });
+  const [imageState, setImageState] = useState({ prompt: '', ratio: '1:1', status: 'idle', msg: '', imageUrl: '', pageUrl: '', pollCount: 0 });
 
   // ── Shared generation history across all tabs ──
   const [genHistory, setGenHistory] = useState([]);
@@ -280,31 +280,51 @@ function VideoGen({ userId, isMobile, state, setState, onGenDone }) {
   );
 }
 
-// IMAGE GEN
+// IMAGE GEN (2-step: submit → poll, like video)
 function ImageGen({ userId, isMobile, state, setState, onGenDone }) {
-  const { prompt, ratio, loading, imageUrl, error } = state;
+  const { prompt, ratio, status, msg, imageUrl, pageUrl, pollCount } = state;
   const set = useCallback((patch) => setState(p => ({ ...p, ...(typeof patch === 'function' ? patch(p) : patch) })), [setState]);
+  const pollRef = useRef(null); const firstRef = useRef(null);
+  const clearAll = () => { clearInterval(pollRef.current); clearTimeout(firstRef.current); pollRef.current = null; firstRef.current = null; };
   const hasLoggedRef = useRef(false);
+  useEffect(() => () => clearAll(), []);
 
-  // Log to history when image is done
   useEffect(() => {
-    if (imageUrl && !hasLoggedRef.current) {
+    if (status === 'done' && imageUrl && !hasLoggedRef.current) {
       hasLoggedRef.current = true;
       onGenDone({ tab: 'image', type: 'image', prompt, imageUrl });
     }
-    if (!imageUrl) {
-      hasLoggedRef.current = false;
-    }
-  }, [imageUrl, prompt, onGenDone]);
+    if (status === 'idle' || status === 'submitting') hasLoggedRef.current = false;
+  }, [status, imageUrl, prompt, onGenDone]);
+
+  const attemptFetch = useCallback(async (pUrl) => {
+    try {
+      set({ msg: '🔄 Checking if image is ready...' });
+      const { data } = await axios.post(`${API_URL}/api/content/image/result`, { pageUrl: pUrl });
+      if (data.status === 'completed' && data.imageUrl) { clearAll(); set({ imageUrl: data.imageUrl, status: 'done', msg: '', pollCount: 0 }); }
+      else set(p => ({ status: 'polling', msg: `⏳ Still generating... (attempt ${p.pollCount + 1})`, pollCount: p.pollCount + 1 }));
+    } catch { set({ msg: '⚠️ Could not check. Retrying...' }); }
+  }, [set]);
+
+  const startPolling = useCallback((pUrl) => {
+    clearAll();
+    firstRef.current = setTimeout(async () => {
+      await attemptFetch(pUrl);
+      pollRef.current = setInterval(() => attemptFetch(pUrl), 20000);
+    }, 35000);
+  }, [attemptFetch]);
 
   const generate = async () => {
     if (!prompt.trim()) return;
-    set({ loading: true, error: '', imageUrl: '' });
+    clearAll(); set({ status: 'submitting', msg: '', imageUrl: '', pollCount: 0 });
     try {
       const { data } = await axios.post(`${API_URL}/api/content/image`, { userId, prompt, aspectRatio: ratio });
-      set({ imageUrl: data.imageUrl, loading: false });
-    } catch (err) { set({ error: err.response?.data?.message || 'Image generation failed.', loading: false }); }
+      set({ pageUrl: data.pageUrl, status: 'pending', msg: '🖼️ Submitted! Auto-checking in ~35 sec...' });
+      startPolling(data.pageUrl);
+    } catch (err) { set({ status: 'error', msg: err.response?.data?.message || 'Submission failed.' }); }
   };
+
+  const isGenerating = ['submitting', 'pending', 'polling'].includes(status);
   return (
     <>
       <div style={S.card}>
@@ -322,19 +342,19 @@ function ImageGen({ userId, isMobile, state, setState, onGenDone }) {
           <p style={{ margin: '0 0 0.4rem', fontSize: '0.78rem', color: '#888' }}>Aspect Ratio</p>
           <RatioPicker value={ratio} onChange={r => set({ ratio: r })} color="#a855f7" />
         </div>
-        <button onClick={generate} disabled={loading || !prompt.trim()} style={{ ...S.btn('#a855f7', loading || !prompt.trim()), width: '100%' }}>
-          {loading ? '⏳ Generating image...' : '🖼️ Generate Image'}
+        <button onClick={generate} disabled={isGenerating || !prompt.trim()} style={{ ...S.btn('#a855f7', isGenerating || !prompt.trim()), width: '100%' }}>
+          {status === 'submitting' ? '⏳ Submitting...' : isGenerating ? '⏳ Generating... (~30s)' : '🖼️ Generate Image'}
         </button>
-        {error && <Banner text={`❌ ${error}`} type="error" />}
-        {loading && <Banner text="⏳ TinyFish automating Qwen... ~30 seconds" type="loading" />}
+        {status === 'error' && msg && <Banner text={`❌ ${msg}`} type="error" />}
+        {isGenerating && <Banner text={msg || '⏳ TinyFish automating Qwen...'} type="loading" />}
       </div>
-      {imageUrl && (
+      {status === 'done' && imageUrl && (
         <div style={S.card}>
           <p style={{ margin: 0, fontSize: '0.82rem', color: '#00ff88', fontWeight: 700 }}>✅ Image Generated!</p>
           <img src={imageUrl} alt="Generated" style={{ width: '100%', borderRadius: '10px', display: 'block' }} />
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <a href={imageUrl} download target="_blank" rel="noreferrer" style={{ padding: '0.5rem 1rem', background: '#a855f722', color: '#a855f7', border: '1px solid #a855f744', borderRadius: '8px', fontSize: '0.78rem', textDecoration: 'none', fontWeight: 600 }}>⬇️ Download</a>
-            <button onClick={() => set({ imageUrl: '', prompt: '' })} style={{ padding: '0.5rem 1rem', background: '#1e1e2e', color: '#555', border: '1px solid #2a2a3a', borderRadius: '8px', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'inherit' }}>✨ New Image</button>
+            <button onClick={() => set({ status: 'idle', imageUrl: '', prompt: '', msg: '', pollCount: 0 })} style={{ padding: '0.5rem 1rem', background: '#1e1e2e', color: '#555', border: '1px solid #2a2a3a', borderRadius: '8px', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'inherit' }}>✨ New Image</button>
           </div>
         </div>
       )}

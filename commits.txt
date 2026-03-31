@@ -1,0 +1,12 @@
+﻿05632744568becd1fbe6731c4977072626cb3df0 feat: complete Neural Veil overhaul - Content page tokens, App.css animations, final polish for investor pitch
+29d0de40df022566a17453fdefffca56d5234a98 feat: complete Neural Veil design system - Settings, Jobs, Platforms emoji cleanup, consistent glass cards and ghost borders across all pages
+dc17ffab7f553fd7d26d6a59707059b971424d84 feat: apply Neural Veil tokens to Dashboard, Trends, global CSS - deep tonal layering, ghost borders, purple-tinted shadows
+3d79b644d08ad9b2c251efa5781fd25dad51ddd9 feat: apply Stitch Neural Veil design system - ultra-premium landing, features grid, social proof, refined login
+94fb2938428eea4ab2628c1af65813bbb34a969a feat: premium UI overhaul - replace all emojis with Lucide icons, glassmorphism design, pitch-ready
+f4e76105cb9c409a90c358e37747c799a63e3ce1 fix: make trends API dynamic and niche-specific
+57c03e5551812f513fd78f52135e1eadb295b433 fix: change platforms grid to masonry column layout to fix gap, hide old resume name
+83f75af21f3ddd1305977582fe8243a8c0ff1b9e feat: add auto-reply and resume toggles to LinkedIn card
+de4c51f2d3596c570f746e5401251740027e76e5 fix: make trends API dynamic and niche-specific
+f7dd64d61682288db705f67544118bb80d33a0c9 fix: make trends API dynamic and niche-specific
+f16064405ac560ef6dad622f8e380b7fdfd71b6d chore: update render url
+0894364138893124b7d2ddf2a2404f176d4fd18e feat: initial deploy - VNPS copy
