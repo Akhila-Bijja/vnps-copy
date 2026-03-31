@@ -73,7 +73,7 @@ const getIgClient = async (user) => {
 const generateAIReply = async (comment, context = '') => {
   try {
     const res = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-      model: 'meta-llama/llama-3.1-8b-instruct:free',
+      model: 'google/gemini-2.5-flash-lite-preview-09-2025',
       max_tokens: 80,
       messages: [{
         role: 'user',

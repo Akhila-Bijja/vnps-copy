@@ -111,7 +111,7 @@ router.get('/callback', async (req, res) => {
         if (meRes.data.instagram_business_account?.id) {
           instagramAccountId = meRes.data.instagram_business_account.id;
         }
-      } catch (e) {}
+      } catch (e) { }
     }
 
     if (!instagramAccountId) {
@@ -126,7 +126,7 @@ router.get('/callback', async (req, res) => {
         params: { fields: 'id,username,name,followers_count', access_token: pageAccessToken }
       });
       igUsername = igInfoRes.data.username || igInfoRes.data.name || '';
-    } catch (e) {}
+    } catch (e) { }
 
     // Step E: Save to database
     const tokenExpiry = new Date(Date.now() + (expiresIn || 5184000) * 1000);
@@ -300,7 +300,7 @@ router.post('/comment/ai-reply', async (req, res) => {
     const aiRes = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'meta-llama/llama-3.1-8b-instruct:free',
+        model: 'google/gemini-2.5-flash-lite-preview-09-2025',
         max_tokens: 80,
         messages: [{ role: 'user', content: `Write a short friendly Instagram reply.\nPost: "${mediaCaption || ''}"\nComment: "${comment}"\nRules: 1-2 sentences max. Friendly tone. 1 emoji. No hashtags.` }]
       },
