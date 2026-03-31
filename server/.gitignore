@@ -1,0 +1,8 @@
+.env
+node_modules/
+uploads/instagram/*
+uploads/linkedin/*
+uploads/resumes/*
+uploads/temp/*
+uploads/videos/*
+uploads/youtube/*
