@@ -42,6 +42,7 @@ export default function Dashboard() {
     const [activeChatId, setActiveChatId] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+    const [draftIdea, setDraftIdea] = useState(null);
     const mediaFilesRef = useRef({});
     const bottomRef = useRef(null);
     const fileRef = useRef(null);
@@ -550,7 +551,7 @@ export default function Dashboard() {
                     </div>
                 )}
 
-                {activeNav === 'trends' && <Trends />}
+                {activeNav === 'trends' && <Trends onGenerate={(idea) => { setDraftIdea(idea); setActiveNav('content'); }} />}
                 {activeNav === 'platforms' && <Platforms />}
                 {activeNav === 'jobs' && <Jobs />}
                 {activeNav === 'settings' && <Settings />}
@@ -560,7 +561,7 @@ export default function Dashboard() {
                         <p style={{ color: '#888' }}>Coming Soon!</p>
                     </div>
                 )}
-                {activeNav === 'content' && <Content />}
+                {activeNav === 'content' && <Content draftIdea={draftIdea} setDraftIdea={setDraftIdea} />}
             </div>
 
             {/* Mobile Bottom Navigation Bar */}

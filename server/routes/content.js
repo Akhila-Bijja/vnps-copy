@@ -58,14 +58,16 @@ router.post('/video', async (req, res) => {
     const { prompt, aspectRatio = '16:9' } = req.body;
     if (!prompt) return res.status(400).json({ message: 'prompt is required' });
 
+    const enhancedPrompt = `${prompt} [IMPORTANT: Must be in ${aspectRatio} aspect ratio format]`;
+
     const goal = `
 1. Navigate to https://chat.qwen.ai/ and wait for full page load.
 2. If not logged in, login with email: ${QWEN_EMAIL} and password: ${QWEN_PASSWORD}.
 3. Wait for the main chat interface to fully load.
 4. Find the + icon next to the chat input box at the bottom and click it.
 5. In the dropdown that appears, click "Create Video".
-6. On the right side of the Create Video area, find aspect ratio buttons: 1:1, 3:4, 4:3, 16:9, 9:16. Click "${aspectRatio}".
-7. Click the text input box and type this exact prompt: ${prompt}
+6. Look for the aspect ratio options and select "${aspectRatio}".
+7. Click the text input box and type this exact prompt: ${enhancedPrompt}
 8. Click the send/submit button to start generation.
 9. Do NOT wait for video to finish.
 10. Return ONLY this JSON: {"page_url": "CURRENT_FULL_URL_OF_PAGE"}
@@ -141,14 +143,16 @@ router.post('/image', async (req, res) => {
     const { prompt, aspectRatio = '1:1' } = req.body;
     if (!prompt) return res.status(400).json({ message: 'prompt is required' });
 
+    const enhancedPrompt = `${prompt} [IMPORTANT: Must be generated in ${aspectRatio} aspect ratio format]`;
+
     const goal = `
 1. Navigate to https://chat.qwen.ai/ and wait for full page load.
 2. If not logged in, login with email: ${QWEN_EMAIL} and password: ${QWEN_PASSWORD}.
 3. Wait for the main chat interface to fully load.
 4. Find the + icon next to the chat input box at the bottom and click it.
 5. In the dropdown that appears, click "Create Image".
-6. On the right side of the Create Image area, find aspect ratio buttons: 1:1, 3:4, 4:3, 16:9, 9:16. Click "${aspectRatio}".
-7. Click the text input box and type this exact prompt: ${prompt}
+6. Look for the aspect ratio options and select "${aspectRatio}".
+7. Click the text input box and type this exact prompt: ${enhancedPrompt}
 8. Click the send/submit button to generate the image.
 9. Do NOT wait for image to finish generating.
 10. Return ONLY this JSON: {"page_url": "CURRENT_FULL_URL_OF_PAGE"}

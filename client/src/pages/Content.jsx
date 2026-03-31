@@ -123,7 +123,7 @@ function GenerationHistory({ history, currentTab }) {
 }
 
 // ── Main Component ────────────────────────────────────────────
-export default function Content() {
+export default function Content({ draftIdea, setDraftIdea }) {
   const [tab, setTab] = useState('video');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -139,8 +139,11 @@ export default function Content() {
   useEffect(() => {
     const h = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', h);
+    if (draftIdea) {
+      setTab('chat');
+    }
     return () => window.removeEventListener('resize', h);
-  }, []);
+  }, [draftIdea]);
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', color: '#fff', padding: isMobile ? '0.8rem' : '1.2rem 1.5rem', fontFamily: "'Segoe UI', sans-serif" }}>
@@ -175,7 +178,7 @@ export default function Content() {
           <GenerationHistory history={genHistory} currentTab="asr" />
         </div>
         <div style={{ display: tab === 'chat' ? 'flex' : 'none', flexDirection: 'column', flex: 1, gap: '0.6rem', minHeight: 0, paddingBottom: isMobile ? '0' : '0.5rem' }}>
-          <ContentChat userId={user.id} isMobile={isMobile} onGenDone={addHistory} />
+          <ContentChat userId={user.id} isMobile={isMobile} onGenDone={addHistory} draftIdea={draftIdea} setDraftIdea={setDraftIdea} />
         </div>
       </div>
       <style>{`
@@ -523,13 +526,28 @@ function SpeechToText({ onGenDone }) {
 }
 
 // CONTENT CHAT
-function ContentChat({ userId, isMobile, onGenDone }) {
+function ContentChat({ userId, isMobile, onGenDone, draftIdea, setDraftIdea }) {
   const [msgs, setMsgs] = useState([{ role: 'ai', text: "✍️ Hey! Ask me to write captions, scripts, blog posts, LinkedIn posts, tweets, or YouTube descriptions!" }]);
   const [input, setInput] = useState(''); const [loading, setLoading] = useState(false); const [cType, setCType] = useState('caption'); const [history, setHistory] = useState([]);
   const bottomRef = useRef();
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
   const types = [{ id: 'caption', label: '📸 Caption' }, { id: 'script', label: '🎬 Script' }, { id: 'blog', label: '📝 Blog' }, { id: 'linkedin', label: '💼 LinkedIn' }, { id: 'tweet', label: '🐦 Tweet' }, { id: 'youtube', label: '🎥 YouTube' }];
   const quickPrompts = { caption: 'Write an engaging Instagram caption for a product launch with emojis and hashtags', script: 'Write a 60-second YouTube Shorts script about 3 productivity hacks', blog: 'Write a compelling intro for a blog post about AI in 2025', linkedin: 'Write a LinkedIn post about a career milestone with a storytelling hook', tweet: 'Write 5 viral tweet ideas about the future of remote work', youtube: 'Write a YouTube description for a React tutorial with SEO keywords' };
+
+  useEffect(() => {
+    if (draftIdea) {
+      const p = draftIdea.platform.toLowerCase();
+      let newType = 'caption';
+      if (p.includes('linkedin')) newType = 'linkedin';
+      else if (p.includes('youtube')) newType = 'script';
+      else if (p.includes('twitter') || p.includes('x')) newType = 'tweet';
+      else if (p.includes('blog')) newType = 'blog';
+      
+      setCType(newType);
+      setInput(`Write a ${draftIdea.platform} post about: ${draftIdea.topic}. Focus on this angle: ${draftIdea.angle}. Hook: "${draftIdea.hook}"`);
+      setDraftIdea(null);
+    }
+  }, [draftIdea, setDraftIdea]);
   const send = async () => {
     if (!input.trim()) return;
     const userMsg = input.trim(); setInput('');

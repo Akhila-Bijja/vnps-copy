@@ -4,7 +4,7 @@ import axios from 'axios';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const niches = ['social media', 'tech', 'finance', 'fitness', 'startup', 'AI', 'crypto', 'marketing'];
 
-export default function Trends() {
+export default function Trends({ onGenerate }) {
   const [trends, setTrends] = useState([]);
   const [ideas, setIdeas] = useState([]);
   const [niche, setNiche] = useState('social media');
@@ -132,7 +132,14 @@ export default function Trends() {
                     <span style={{ fontSize: '0.7rem', color: '#666', fontStyle: 'italic' }}>{idea.angle}</span>
                   </div>
                   <p style={{ margin: '0 0 0.3rem', fontSize: '0.85rem', fontWeight: 600, color: '#fff' }}>{idea.topic}</p>
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#a855f7', fontStyle: 'italic' }}>"{idea.hook}"</p>
+                  <p style={{ margin: '0 0 0.8rem', fontSize: '0.8rem', color: '#a855f7', fontStyle: 'italic' }}>"{idea.hook}"</p>
+                  {onGenerate && (
+                    <button 
+                      onClick={() => onGenerate(idea)}
+                      style={{ width: '100%', padding: '0.4rem', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontFamily: 'inherit' }}>
+                      ✍️ Generate with AI
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
