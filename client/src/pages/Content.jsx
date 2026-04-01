@@ -218,7 +218,17 @@ function VideoGen({ userId, isMobile, state, setState, onGenDone }) {
     try {
       set({ msg: '🔄 Checking if video is ready...' });
       const { data } = await axios.post(`${API_URL}/api/content/video/result`, { pageUrl: pUrl });
-      if (data.status === 'completed' && data.videoUrl) { clearAll(); set({ videoUrl: data.videoUrl, status: 'done', msg: '', pollCount: 0 }); }
+      if (data.status === 'completed' && data.videoUrl) {
+        clearAll();
+        set({ msg: '⬇️ Downloading video to keep it watchable...' });
+        try {
+          const blob = await fetch(data.videoUrl).then(r => r.blob());
+          const blobUrl = URL.createObjectURL(blob);
+          set({ videoUrl: blobUrl, status: 'done', msg: '', pollCount: 0, _cdnUrl: data.videoUrl });
+        } catch {
+          set({ videoUrl: data.videoUrl, status: 'done', msg: '', pollCount: 0 });
+        }
+      }
       else set(p => ({ status: 'polling', msg: `⏳ Still rendering... (attempt ${p.pollCount + 1})`, pollCount: p.pollCount + 1 }));
     } catch { set({ msg: '⚠️ Could not check. Retrying...' }); }
   }, [set]);
@@ -304,7 +314,17 @@ function ImageGen({ userId, isMobile, state, setState, onGenDone }) {
     try {
       set({ msg: '🔄 Checking if image is ready...' });
       const { data } = await axios.post(`${API_URL}/api/content/image/result`, { pageUrl: pUrl });
-      if (data.status === 'completed' && data.imageUrl) { clearAll(); set({ imageUrl: data.imageUrl, status: 'done', msg: '', pollCount: 0 }); }
+      if (data.status === 'completed' && data.imageUrl) {
+        clearAll();
+        set({ msg: '⬇️ Downloading image...' });
+        try {
+          const blob = await fetch(data.imageUrl).then(r => r.blob());
+          const blobUrl = URL.createObjectURL(blob);
+          set({ imageUrl: blobUrl, status: 'done', msg: '', pollCount: 0, _cdnUrl: data.imageUrl });
+        } catch {
+          set({ imageUrl: data.imageUrl, status: 'done', msg: '', pollCount: 0 });
+        }
+      }
       else set(p => ({ status: 'polling', msg: `⏳ Still generating... (attempt ${p.pollCount + 1})`, pollCount: p.pollCount + 1 }));
     } catch { set({ msg: '⚠️ Could not check. Retrying...' }); }
   }, [set]);
